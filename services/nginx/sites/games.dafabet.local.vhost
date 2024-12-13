@@ -1,0 +1,29 @@
+server {
+  server_name games.dafabet.local arcade.dafabet.local;
+  root        /var/www/brands/games/web;
+  index       index.php;
+
+  location / {
+    try_files $uri /app.php$is_args$args;
+  }
+
+  location ~ \.php {
+    try_files $uri =404;
+    fastcgi_split_path_info ^(.+\.php)(/.+)$;
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+    fastcgi_index app.php;
+    fastcgi_pass  php-fpm:9000;
+  }
+
+  location ~* \.(?:js|css|jpg|jpeg|gif|png|ico|cur|gz|svg|svgz|mp4|ogg|ogv|webm|htc|swf|fla)$ {
+    expires 1y;
+    access_log off;
+    add_header Cache-Control "public";
+
+    location ~ '/dafa/(?<asset>css|images|js)/(?<path>.*)' {
+        alias /var/www/brands/web_symlink_wbc_base/web/$asset/$path;
+    }
+  }
+}

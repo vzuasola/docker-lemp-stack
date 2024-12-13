@@ -1,0 +1,174 @@
+version: '2'
+
+services:
+  workspace:
+    image: busybox:latest
+    volumes:
+      - ${APPLICATION}:/var/www
+      - ./mount/mariadb:/var/lib/mysql:rw
+      - ./mount/redis:/data:rw
+      - ./mount/mongo:/data/db
+      - ./mount/elastic:/usr/share/elasticsearch/data
+
+  php-fpm:
+    build:
+      context: ./services/php
+      args:
+        XDEBUG_ON: ${XDEBUG_ON}
+        XDEBUG_REMOTE_HOST: ${XDEBUG_REMOTE_HOST}
+    ports:
+      - 9000
+    volumes:
+      - ./services/php/php.ini:/usr/local/etc/php/php.ini:ro
+      - ./services/php/php-fpm.conf:/usr/local/etc/php-fpm.conf:ro
+      - ./services/php/www.conf:/usr/local/etc/php-fpm.d/www.conf:ro
+    volumes_from:
+      - workspace
+    restart: always
+    environment:
+      USER: ${USER}
+    extra_hosts:
+       - "logic.dev:10.5.0.5"
+       - "logic.local:10.5.0.5"
+       - "casino.drupal.dev:10.5.0.5"
+       - "mobile-entrypage.drupal.local:10.5.0.5"
+       - "entrypage.drupal.local:10.5.0.5"
+       - "ptplus.drupal.local:10.5.0.5"
+       - "faqs.drupal.local:10.5.0.5"
+       - "live-dealer.drupal.local:10.5.0.5"
+       - "keno.drupal.local:10.5.0.5"
+       - "virtuals.drupal.local:10.5.0.5"
+       - "mobile-games.drupal.local:10.5.0.5"
+       - "mobile-casino.drupal.local:10.5.0.5"
+       - "mobile-casino-gold.drupal.local:10.5.0.5"
+       - "mobile-live-dealer.drupal.local:10.5.0.5"
+       - "mobile-arcade.drupal.local:10.5.0.5"
+       - "mobile-soda-casino.drupal.local:10.5.0.5"
+       - "mobile-lottery.drupal.local:10.5.0.5"
+       - "mobile-exchange.drupal.local:10.5.0.5"
+       - "mobile-nextbet.drupal.local:10.5.0.5"
+       - "nextbet.drupal.local:10.5.0.5"
+       - "dafa-ghana.drupal.local:10.5.0.5"
+       - "mobile-zedbet.drupal.local:10.5.0.5"
+       - "zedbet.drupal.local:10.5.0.5"
+       - "777baby-casino.drupal.local:10.5.0.5"
+       - "dafa-ghana.local:10.5.0.5"
+       - "msw.drupal.local:10.5.0.5"
+       - "mobile-msw.drupal.local:10.5.0.5"
+       - "registration-row.drupal.local:10.5.0.5"
+       - "tct-dafa-ghanawww.elysium-dfbt.com:10.5.0.5"
+       - "registration.elysium-dfbt.com:10.5.0.5"
+       - "mobile-cashier.elysium-dfbt.com:10.5.0.5"
+       - "registration.drupal.local:10.5.0.5"
+       - "jamboree-casino.drupal.local:10.5.0.5"
+       - "zipang-casino.drupal.local:10.5.0.5"
+       - "tct-m.elysium-dfbt.com:10.5.0.5"
+       - "account.drupal.local:10.5.0.5"
+       - "tct-accountwww.elysium-dfbt.com:10.5.0.5"
+
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.4
+
+  nginx:
+    build:
+      context: ./services/nginx
+    volumes:
+      - ./services/nginx/logs:/var/log/nginx
+      - ./services/nginx/sites:/etc/nginx/conf.d
+    volumes_from:
+      - workspace
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - php-fpm
+    restart: always
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.5
+
+  mariadb:
+    build:
+      context: ./services/mariadb
+    ports:
+      - 3306:3306
+    volumes_from:
+      - workspace
+    environment:
+      MYSQL_DATABASE: app
+      MYSQL_USER: app
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.6
+
+  redis:
+    build:
+      context: ./services/redis
+    volumes_from:
+      - workspace
+    ports:
+      - 6379:6379
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.7
+
+  mongo:
+    build:
+      context: ./services/mongo
+    ports:
+      - 27017:27017
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.8
+
+  elasticsearch:
+    build:
+      context: ./services/elasticsearch
+    volumes:
+      - ./services/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    volumes_from:
+      - workspace
+    environment:
+      USER: ${USER}
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.9
+
+  node:
+    build:
+      context: ./services/node
+    volumes_from:
+      - workspace
+
+  dejavu:
+    build:
+      context: ./services/dejavu
+    volumes_from:
+      - workspace
+    ports:
+      - 1358:1358
+
+volumes:
+  php-fpm:
+    driver: local
+  nginx:
+    driver: local
+  mariadb:
+    driver: local
+  redis:
+    driver: local
+
+networks:
+  vpcbr:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.5.0.0/16
+         gateway: 10.5.0.1

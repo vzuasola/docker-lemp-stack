@@ -1,0 +1,1 @@
+FROM redislabs/redisearch:latest

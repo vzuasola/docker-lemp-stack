@@ -1,0 +1,19 @@
+server {
+  server_name registration-row.local registration-row.dev tct-dafa-ghanawww.elysium-dfbt.com;
+  root        /var/www/Row/registration-row/web;
+  index       index.php;
+
+  location / {
+    try_files $uri /app.php$is_args$args;
+  }
+
+  location ~ \.php {
+    try_files $uri =404;
+    fastcgi_split_path_info ^(.+\.php)(/.+)$;
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+    fastcgi_index app.php;
+    fastcgi_pass  php-fpm:9000;
+  }
+}

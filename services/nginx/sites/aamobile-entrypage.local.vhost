@@ -1,0 +1,22 @@
+server {
+  server_name mobile-entrypage.local mobile-entrypage.dev mcashier.geyoutan2021.com tct-m.elysium-dfbt.com;
+  root        /var/www/mobile/mobile-entrypage/web;
+  index       index.php;
+
+  location / {
+    try_files $uri /app.php$is_args$args;
+  }
+
+  location ~ \.php {
+    try_files $uri =404;
+    fastcgi_split_path_info ^(.+\.php)(/.+)$;
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+    fastcgi_param ICORE_HOST 'http://cms-app.games.itct';
+    fastcgi_param JIRA_API_USER "vladimir.zuasola@sportserve.co";
+    fastcgi_param JIRA_API_KEY "ATATT3xFfGF0F91YH7C4v6qC0MC16yVOSXrSTBcOnS7O8mYO9_ucdhvTce7mQqbEG6rNXUYYJhVFleR3W9M3KJZYmB1c5SAIPZZuUFDUB2epx9LMOOM60ain4K6hKgh4LhNtyJkbdTOA0ymfFWrd2t1nwD1mRgj__nJoKAHpog81OolbMBQblbM=0EBB2CFE";
+    fastcgi_index app.php;
+    fastcgi_pass  php-fpm:9000;
+  }
+}

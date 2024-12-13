@@ -1,0 +1,32 @@
+server {
+  server_name symfony.dev;
+  root /var/www/html/symfony;
+
+  index index.php app.php app_dev.php;
+  
+  location / {
+      try_files $uri /app_dev.php$is_args$args;
+  }
+  
+  location ~ ^/(app_dev|config)\.php(/|$) {
+      fastcgi_pass php-fpm:9000;
+      fastcgi_split_path_info ^(.+\.php)(/.+)$;
+  
+      fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+      fastcgi_param DOCUMENT_ROOT $realpath_root;
+      include fastcgi_params;
+  }
+  
+  location ~ ^/app\.php(/|$) {
+      fastcgi_pass php-fpm:9000;
+      fastcgi_split_path_info ^(.+\.php)(/.*)$;
+      fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+      fastcgi_param DOCUMENT_ROOT $realpath_root;
+      include fastcgi_params;
+      internal;
+  }
+  
+  location ~ \.php$ {
+    return 404;
+  }
+}
