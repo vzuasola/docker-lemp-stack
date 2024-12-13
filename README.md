@@ -90,3 +90,4 @@ Also give write permissions to cache, assets and logs folders as needed.
 * Destroy then initialize the machine
 * If it does not solve your problem, Restart your PC 3 times
 * If problems persist, fix it, or consult me (Alex)
+# docker-lemp-stack
